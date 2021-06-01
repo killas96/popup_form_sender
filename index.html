@@ -1,0 +1,92 @@
+<a class="button callMe" data-onclick="callMe" data-toggle="modal" data-target="#callMeModal"><span>Заказать звонок</span></a>
+
+<!-- Modal start-->
+<div class="modal fade" id="callMeModal" tabindex="-1" role="dialog" aria-labelledby="callMeModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-custom" role="document">
+		<div class="modal-content">
+			<form action="/ajax.php" method="post" class="ajaxForm callMeForm" id="callMeForm">
+				<input type="hidden" name="fish" form="callMeForm">
+				<input type="hidden" name="type" form="callMeForm" value="callMe">
+				<input type="hidden" name="from" form="callMeForm" value="<?=(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";?>">
+				<div class="modal-header">					
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h3 class="modal-title center" id="callMeModalLabel">Заявка на звонок</h3>
+				</div>
+				<div class="modal-body">
+					<div class="answer_block center">
+					</div>
+					<div class="request_block">
+						<p>Оставьте ваши контакты и наш менеджер свяжется с Вами в ближайшее время</p>
+						<p>
+							<input type="text" name="name" class="form-control" form="callMeForm" required placeholder="Ваше имя">
+						</p>
+						<p>
+							<input type="text" name="phone" class="form-control" form="callMeForm" required placeholder="Ваш телефон">
+						</p>
+						<p>
+							<label>
+								<input type="checkbox" name="policy" form="callMeForm" value="1" required checked="checked">
+								&nbsp;
+								Я согласен (-на) с политикой обработки персональных данных
+							</label>
+						</p>
+						<p class="g-recaptcha" data-sitekey="ключ" data-callback="recaptchaCallback"></p>
+						<p class="center">
+							<button form="callMeForm" type="submit" class="btn">Перезвоните мне</button>
+						</p>
+					</div>
+				</div>
+				<div class="modal-footer center">
+					
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<script src='https://www.google.com/recaptcha/api.js'></script>
+<script>
+var recaptchachecked=false; 
+	
+function recaptchaCallback() {
+	recaptchachecked = true;
+}
+
+function isreCaptchaChecked() {
+	return recaptchachecked;
+}
+
+(function($) {
+
+	$('[data-toggle="modal"]').on("click", function() {
+		recaptchachecked=false; 
+		var this_ = $(this);
+		grecaptcha.reset();
+		$(this_.data("target") + ' .answer_block').html("");
+		$(this_.data("target") + ' .answer_block').hide();
+		$(this_.data("target") + ' .request_block').show();
+	});
+	
+    $('.ajaxForm').on('submit', function(e){
+        e.preventDefault();
+		var form = $(this);
+		if(isreCaptchaChecked()) {
+			$.ajax({
+				type: form.attr('method'),
+				url: form.attr('action'),
+				data: form.serialize()
+			}).done(function(data) {
+				$('.request_block').hide();
+				$('.answer_block').html(data).show();
+				form[0].reset();
+			}).fail(function(data) {
+				console.log(data);
+			});
+		}
+    });
+	
+})(jQuery)
+
+</script>
+<!-- Modal end-->
